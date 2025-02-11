@@ -2,7 +2,7 @@
 
 const shopModel = require("../models/shop.model");
 const bcrypt = require("bcrypt");
-const crypto = require("crypto");
+const crypto = require("node:crypto");
 const KeyTokenService = require("./keyToken.service");
 const { createTokenPair } = require("../auth/authUtils");
 
@@ -34,42 +34,34 @@ class AuthService {
         password: passwordHash,
         roles: [RoleShop.SHOP],
       });
+
       if (newShop) {
+        console.log("sdsdsds-========");
         //Created privateKey, publicKey
-        const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
-          modulusLength: 4096,
-          publicKeyEncoding: {
-            type: "pkcs1",
-            format: "pem",
-          },
-          privateKeyEncoding: {
-            type: "pkcs1",
-            format: "pem",
-          },
-        });
+        const publicKey = crypto.randomBytes(64).toString("hex");
+        const privateKey = crypto.randomBytes(64).toString("hex");
+        console.log(publicKey);
+        console.log(privateKey);
+        // console.log({ privateKey, publicKey });
 
-        console.log({ privateKey, publicKey });
-
-        const publicKeyString = await KeyTokenService.createKeyToken({
+        const keyStore = await KeyTokenService.createKeyToken({
           userId: newShop._id,
           publicKey,
+          privateKey,
         });
 
-        if (!publicKeyString) {
+        if (!keyStore) {
           return {
             code: "ERR_003",
-            message: "Publickey not created",
+            message: "keyStore not created",
             status: "error",
           };
         }
 
-        const publicKeyObject = crypto.createPublicKey(publicKeyString);
-        console.log(`Public Key Object :: `, publicKeyObject);
-
         // create token pair
         const token = await createTokenPair(
           { userId: newShop._id, email },
-          publicKeyObject,
+          publicKey,
           privateKey
         );
         console.log(`Created Token Pair :: `, token);
