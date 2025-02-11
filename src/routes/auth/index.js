@@ -1,10 +1,11 @@
 "use strict";
 const express = require("express");
 const authController = require("../../controllers/auth.controller");
+const { asyncHandler } = require("../../auth/checkAuth");
 const router = express.Router();
 
 //Sign up
-router.post("/shop/signup", authController.signUp);
+router.post("/shop/signup", asyncHandler(authController.signUp));
 
 // router.post("/shop/test", (req, res) => {
 //   console.log(req.body);
