@@ -5,7 +5,9 @@ const bcrypt = require("bcrypt");
 const crypto = require("node:crypto");
 const KeyTokenService = require("./keytoken.service");
 const { createTokenPair } = require("../auth/authUtils");
-const { BadRequestError } = require("../core/error.response");
+const { BadRequestError, AuthFailureError } = require("../core/error.response");
+const { findByEmail } = require("./shop.service");
+const { getInfoData } = require("../utils");
 
 const RoleShop = {
   SHOP: "SHOP",
@@ -15,6 +17,55 @@ const RoleShop = {
 };
 
 class AuthService {
+  static logout = async ({ keyStore }) => {
+    const delKey = await KeyTokenService.removeKeyById(keyStore._id);
+    return delKey;
+  };
+
+  //Login
+  static login = async ({ email, password, refreshToken = null }) => {
+    /*
+        1. Check if user exists
+        2. Check if password is correct
+        3. Create Access Token and Refresh Token
+        4. Generate tokens
+        5. Get data return login
+    */
+
+    const foundShop = await findByEmail({ email });
+    if (!foundShop) {
+      throw new BadRequestError("Error: Shop not found");
+    }
+    const match = bcrypt.compare(password, foundShop.password);
+    if (!match) {
+      throw new AuthFailureError("Authentication error");
+    }
+
+    const publicKey = crypto.randomBytes(64).toString("hex");
+    const privateKey = crypto.randomBytes(64).toString("hex");
+
+    const { _id: userId } = foundShop;
+    const tokens = await createTokenPair(
+      { userId, email },
+      publicKey,
+      privateKey
+    );
+    await KeyTokenService.createKeyToken({
+      refreshToken: tokens.refreshToken,
+      privateKey,
+      publicKey,
+      userId,
+    });
+    console.log(foundShop);
+    return {
+      shop: getInfoData({
+        fields: ["_id", "name", "email"],
+        object: foundShop,
+      }),
+      tokens,
+    };
+  };
+
   //Sign up
   static signUp = async ({ name, email, password }) => {
     const checkMailExists = await shopModel.findOne({ email }).lean();
@@ -34,8 +85,6 @@ class AuthService {
       //Created privateKey, publicKey
       const publicKey = crypto.randomBytes(64).toString("hex");
       const privateKey = crypto.randomBytes(64).toString("hex");
-      console.log(publicKey);
-      console.log(privateKey);
       // console.log({ privateKey, publicKey });
 
       const keyStore = await KeyTokenService.createKeyToken({
@@ -49,19 +98,19 @@ class AuthService {
       }
 
       // create token pair
-      const token = await createTokenPair(
+      const tokens = await createTokenPair(
         { userId: newShop._id, email },
         publicKey,
         privateKey
       );
-      console.log(`Created Token Pair :: `, token);
+      console.log(`Created Token Pair :: `, tokens);
 
       return {
-        code: "ERR_000",
-        metadata: {
-          shop: newShop,
-          token,
-        },
+        shop: getInfoData({
+          fields: ["_id", "name", "email"],
+          object: newShop,
+        }),
+        tokens,
       };
     }
 
