@@ -15,6 +15,11 @@ router.post("/shop/login", asyncHandler(authController.login));
 router.use(authentication);
 
 router.post("/shop/logout", asyncHandler(authController.logout));
+router.post(
+  "/shop/refresh-token",
+  asyncHandler(authController.handlerRefreshToken)
+);
+
 // router.post("/shop/test", (req, res) => {
 //   console.log(req.body);
 //   return res.status(200).json({ message: "Welcome to the API" });

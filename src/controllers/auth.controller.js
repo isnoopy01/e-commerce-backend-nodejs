@@ -4,6 +4,13 @@ const { CREATED, SuccessResponse } = require("../core/success.response");
 const AuthService = require("../services/auth.service");
 
 class AuthController {
+  handlerRefreshToken = async (req, res, next) => {
+    new SuccessResponse({
+      message: "Get token successfully",
+      metadata: await AuthService.handlerRefreshToken(req.body.refreshToken),
+    }).send(res);
+  };
+
   logout = async (req, res, next) => {
     new SuccessResponse({
       message: "Logout successfully",
