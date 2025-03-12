@@ -21,7 +21,9 @@ const RoleShop = {
 };
 
 class AuthService {
-  static handlerRefreshToken = async (refreshToken) => {
+  static handlerRefreshToken = async ({ keyStore, user, refreshToken }) => {
+    const { userId, email } = user;
+
     //Checktoken used
     const foundToken = await KeyTokenService.findByRefreshTokenUsed(
       refreshToken
@@ -39,10 +41,10 @@ class AuthService {
 
     const holderToken = await KeyTokenService.findByRefreshToken(refreshToken);
     if (!holderToken) throw new AuthFailureError("Shop not Registered");
-    const { userId, email } = await verifyJWT(
-      refreshToken,
-      holderToken.privateKey
-    );
+    // const { userId, email } = await verifyJWT(
+    //   refreshToken,
+    //   holderToken.privateKey
+    // );
     const foundShop = await findByEmail({ email });
     if (!foundShop) throw new AuthFailureError("Shop not Registered");
 
