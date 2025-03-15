@@ -2,6 +2,7 @@
 
 const { BadRequestError } = require("../core/error.response");
 const { product, clothing, electronics } = require("../models/product.model");
+const { insertInventory } = require("../models/repositories/inventory.repo");
 const {
   findAllDraftForShop,
   publishProductForShop,
@@ -99,7 +100,15 @@ class Product {
   }
 
   async createProduct(id) {
-    return await product.create({ ...this, _id: id });
+    const newProduct = await product.create({ ...this, _id: id });
+    if (newProduct) {
+      await insertInventory({
+        product_id: newProduct._id,
+        shop_id: this.shop,
+        stock: this.quantity,
+      });
+    }
+    return newProduct;
   }
 
   async updateProduct(id, bodyUpdate) {
