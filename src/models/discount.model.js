@@ -26,10 +26,6 @@ var discountSchema = new Schema(
       type: Number,
       required: true,
     },
-    max_value: {
-      type: Number,
-      required: true,
-    },
     code: {
       type: String,
       required: true,
@@ -48,7 +44,7 @@ var discountSchema = new Schema(
     }, // so luong discount duoc ap dung
     uses_count: {
       type: Number,
-      required: true,
+      default: 0,
     }, //So luong discount da su dung
     users_used: {
       type: Array,
