@@ -23,7 +23,24 @@ const updateUserCartQuantity = async ({ user_id, product }) => {
   return await cart.findOneAndUpdate(query, updateSet, options);
 };
 
+const deleteUserCart = async ({ user_id, product_id }) => {
+  const query = { user_id, state: "active" };
+  const updateSet = {
+    $pull: {
+      products: { product_id },
+    },
+  };
+  const deleteCart = await cart.updateOne(query, updateSet);
+  return deleteCart;
+};
+
+const getListUserCart = async ({ user_id }) => {
+  return await cart.findOne({ user_id }).lean();
+};
+
 module.exports = {
   createUserCart,
   updateUserCartQuantity,
+  deleteUserCart,
+  getListUserCart,
 };
