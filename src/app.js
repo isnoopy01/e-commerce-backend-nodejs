@@ -14,6 +14,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 //init DB
 require("./database/init.mongodb");
+
+const initRedis = require("./database/init.redis");
+initRedis.initRedis();
 // const { checkOverLoad } = require("./helpers/check.connect");
 // checkOverLoad();
 //init routes

@@ -1,3 +1,4 @@
+const { convertToObjectIdMongoDb } = require("../../utils");
 const { cart } = require("../cart.model");
 
 const createUserCart = async ({ user_id, product }) => {
@@ -38,9 +39,16 @@ const getListUserCart = async ({ user_id }) => {
   return await cart.findOne({ user_id }).lean();
 };
 
+const findCartById = async ({ cart_id }) => {
+  return await cart
+    .findOne({ _id: convertToObjectIdMongoDb(cart_id), state: "active" })
+    .lean();
+};
+
 module.exports = {
   createUserCart,
   updateUserCartQuantity,
   deleteUserCart,
   getListUserCart,
+  findCartById,
 };

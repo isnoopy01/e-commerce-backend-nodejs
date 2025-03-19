@@ -28,10 +28,16 @@ var inventorySchema = new Schema(
       required: true,
       unique: true,
     },
+    //Đặt hàng trước. Khi sản phẩm được thêm vào giỏ hàng thì sẽ thêm vào đây
     reservation: {
       type: Array,
       default: [],
     },
+    /*
+      cart_id,
+      stock,
+      createdAt
+    */
   },
   {
     timestamps: true,
